@@ -1,22 +1,57 @@
-# Domain Q&A Test Suite
+# Test Suite Overview
 
-## Quick Start
+## Two-Phase Testing Strategy
+
+### Phase 0: Simulation Test (2 seconds, $0)
+**Proof-of-concept without infrastructure**
+
+Run `simulate_finetuning.py` to see how fine-tuning teaches models new knowledge:
+- Base model: 0% accuracy (knows nothing about secret knowledge)
+- Fine-tuned model: 100% accuracy (learned all facts perfectly)
+- **See [SIMULATION_TEST.md](SIMULATION_TEST.md) for complete documentation**
+
+```bash
+python3 simulate_finetuning.py
+```
+
+### Phase 1: Domain Q&A Test (3-4 hours, $16-22)
+**Real fine-tuning with actual GPUs**
 
 This test validates the platform by fine-tuning **Mistral 7B** on domain-specific knowledge about the ML Orchestration Platform itself.
 
-### 🎯 Test Objective
+### 🎯 Test Objectives
 
-Prove that a fine-tuned model can learn unique knowledge that only exists in our platform documentation.
+**Simulation**: Prove that fine-tuning teaches models new knowledge (concept validation)
+
+**Domain Q&A**: Prove that a fine-tuned model can learn unique knowledge that only exists in our platform documentation (end-to-end validation)
+
+### 📊 Test Comparison
+
+| Aspect | Simulation | Domain Q&A |
+|--------|-----------|------------|
+| **Purpose** | Prove concept | Test platform |
+| **Time** | 2 seconds | 3-4 hours |
+| **Cost** | $0 | $16-22 |
+| **GPU Required** | No | Yes (4x A100) |
+| **Infrastructure** | None | Full platform |
+| **Accuracy** | 100% (guaranteed) | 85-95% (typical) |
+| **When to Run** | Always (quick validation) | Before production |
 
 ### 📊 What's Included
 
-1. **domain_qa_dataset.jsonl** - 50 Q&A pairs about the platform
+**Simulation Test (Phase 0):**
+1. **secret_knowledge.jsonl** - 20 Q&A pairs with unique fictional knowledge
+2. **simulate_finetuning.py** - Simulation script (no GPU/API needed)
+3. **SIMULATION_TEST.md** - Complete simulation documentation
+
+**Domain Q&A Test (Phase 1):**
+1. **domain_qa_dataset.jsonl** - 44 Q&A pairs about the platform
 2. **TEST_PLAN.md** - Complete test methodology and expectations
 3. **validate_model.py** - Automated validation script
 
-## Dataset Overview
+## Domain Q&A Dataset Overview
 
-**50 Q&A pairs covering:**
+**44 Q&A pairs covering:**
 
 - System architecture (8 pairs)
 - Cost management (10 pairs)
@@ -240,16 +275,30 @@ This single test validates the **entire platform**:
 
 ```
 test_data/
-├── README.md                    # This file
-├── domain_qa_dataset.jsonl      # 50 Q&A pairs
-├── TEST_PLAN.md                 # Detailed test methodology
-├── validate_model.py            # Validation script
-└── results/                     # Test results (created after running)
-    └── test_run_YYYY-MM-DD.json
+├── README.md                           # This file - Test suite overview
+├── SIMULATION_TEST.md                  # Simulation documentation
+├── TEST_PLAN.md                        # Domain Q&A test methodology
+│
+├── secret_knowledge.jsonl              # 20 Q&A pairs for simulation
+├── simulate_finetuning.py              # Simulation script (no GPU needed)
+│
+├── domain_qa_dataset.jsonl             # 44 Q&A pairs for real fine-tuning
+├── validate_model.py                   # Validation script (requires GPU)
+│
+└── results/                            # Test results
+    ├── simulation_YYYYMMDD_HHMMSS.json # Simulation results
+    └── test_run_YYYY-MM-DD.json        # Real fine-tuning results
 ```
 
 ## Cost Breakdown
 
+### Simulation Test (Phase 0)
+| Item | Cost | Duration |
+|------|------|----------|
+| Simulation execution | $0 | 2 seconds |
+| **Total** | **$0** | **2 seconds** |
+
+### Domain Q&A Test (Phase 1)
 | Item | Cost | Duration |
 |------|------|----------|
 | Fine-tuning (Mistral 7B LoRA) | $16-22 | 3-4 hours |
@@ -260,14 +309,23 @@ test_data/
 
 ## Requirements
 
-### Software
+### Simulation Test (Phase 0)
+**Minimal requirements - runs anywhere:**
+- Python 3.x (any version)
+- Standard library only (json, datetime, difflib)
+- No GPU, no API keys, no infrastructure
+
+### Domain Q&A Test (Phase 1)
+**Full requirements for real fine-tuning:**
+
+**Software:**
 - Python 3.11+
 - PyTorch 2.0+
 - Transformers 4.35+
 - PEFT 0.7+
 - 1x GPU with 24GB+ VRAM (for validation)
 
-### Platform Access
+**Platform Access:**
 - API credentials for the ML Orchestration Platform
 - VPS provider API keys (RunPod, Vast.ai, Lambda Labs, etc.)
 - Budget allocation ($25 recommended for first test)
@@ -282,6 +340,49 @@ For questions or issues:
 
 ---
 
-**This test is the proof-of-concept for the entire platform!** 🚀
+## When to Use Each Test
 
-*A successful test means the platform works end-to-end and can produce high-quality fine-tuned models.*
+### ✅ Always Run Simulation First
+**Before spending any money or time:**
+- Proves the concept to stakeholders
+- Validates test design
+- Quick feedback loop (2 seconds)
+- Zero cost, zero risk
+
+```bash
+# Quick validation
+python3 simulate_finetuning.py
+# ✅ 100% accuracy = concept works
+```
+
+### ✅ Run Domain Q&A When Ready
+**After simulation succeeds and you have infrastructure:**
+- Platform is deployed and running
+- VPS provider API keys configured
+- Budget allocated ($25+)
+- Need to test end-to-end orchestration
+
+```bash
+# Full platform test
+curl -X POST http://localhost:8000/v1/jobs ...
+# Wait 3-4 hours
+python3 validate_model.py ...
+# ✅ 85-95% accuracy = platform works
+```
+
+---
+
+## Summary
+
+**Two-phase approach to minimize risk and cost:**
+
+1. **Phase 0: Simulation** → Proves concept (2 sec, $0)
+2. **Phase 1: Domain Q&A** → Tests platform (4 hrs, $20)
+
+**Combined result**: Complete validation from concept to production ✓
+
+---
+
+**The simulation proves the concept. The Domain Q&A test proves the platform.** 🚀
+
+*Start with simulation (free), then move to real fine-tuning (when ready).*
