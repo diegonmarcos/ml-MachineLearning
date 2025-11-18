@@ -1,5 +1,189 @@
 # Quick Start - Get Running in 30 Minutes
 
+## 🚀 START HERE - Your Action Steps Right Now
+
+### Step 1: Get VPS Provider API Key (10 min)
+
+**Pick ONE** and get the API key:
+
+**Vast.ai** (Cheapest - $16 for test):
+1. Go to https://vast.ai/ → Sign Up
+2. Verify email → Billing → Add $20 credit
+3. Account → API Keys → New API Key
+4. **Copy the key**: `sk_vast_xxxxxxxxxx`
+
+**OR RunPod** (Easiest - $22 for test):
+1. Go to https://www.runpod.io/ → Sign up with GitHub
+2. Add $20 credit → Settings → API Keys → Create
+3. **Copy the key**: `runpod_xxxxxxxxxx`
+
+---
+
+### Step 2: Setup Project (5 min)
+
+```bash
+# Clone repository
+git clone https://github.com/diegonmarcos/ml-MachineLearning.git
+cd ml-MachineLearning
+git checkout claude/n8n-model-orchestration-013H2LUqzcYqLcbzw8ZX5nW2
+
+# Copy environment template
+cp .env.example .env
+
+# Generate 3 secrets (run this command 3 times, save each output)
+openssl rand -hex 32
+```
+
+---
+
+### Step 3: Edit .env File (5 min)
+
+```bash
+# Open .env file
+nano .env
+```
+
+**Change ONLY these lines:**
+
+```bash
+# Paste your 3 generated secrets
+API_SECRET_KEY=paste-first-secret-here
+JWT_SECRET=paste-second-secret-here
+N8N_ENCRYPTION_KEY=paste-third-secret-here
+
+# Create passwords (can use same for all)
+POSTGRES_PASSWORD=YourPassword123!
+REDIS_PASSWORD=YourPassword123!
+N8N_BASIC_AUTH_PASSWORD=YourPassword123!
+GRAFANA_ADMIN_PASSWORD=YourPassword123!
+MINIO_ROOT_PASSWORD=YourPassword123!
+
+# Add YOUR API key from Step 1
+VAST_API_KEY=sk_vast_your_key_here
+# OR if using RunPod:
+RUNPOD_API_KEY=runpod_your_key_here
+```
+
+**Save**: Ctrl+X, then Y, then Enter
+
+---
+
+### Step 4: Start Platform (2 min)
+
+```bash
+docker-compose up -d
+```
+
+Wait 2-3 minutes, then verify:
+
+```bash
+docker-compose ps  # All should show "Up"
+```
+
+Open http://localhost:8000/docs to verify API is running
+
+---
+
+### Step 5: Initialize Database (1 min)
+
+```bash
+docker-compose exec api alembic upgrade head
+```
+
+---
+
+### Step 6: Create User (1 min)
+
+```bash
+docker-compose exec api python scripts/create_user.py \
+  --email your-email@example.com \
+  --password YourSecurePassword123 \
+  --role admin
+```
+
+**SAVE THE API TOKEN** it displays!
+
+---
+
+### Step 7: Run First Training Job (30 sec)
+
+```bash
+# Set your token (paste from Step 6)
+export API_TOKEN="paste-your-token-here"
+
+# Upload test dataset
+curl -X POST http://localhost:8000/v1/datasets \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -F "file=@test_data/domain_qa_dataset.jsonl" \
+  -F "name=domain_qa_test" \
+  -F "type=jsonl"
+
+# Start training
+curl -X POST http://localhost:8000/v1/jobs \
+  -H "Authorization: Bearer $API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "test-run-1",
+    "model_name": "mistralai/Mistral-7B-v0.1",
+    "dataset_id": "domain_qa_test",
+    "training_config": {
+      "training_type": "lora",
+      "epochs": 3,
+      "batch_size": 4,
+      "learning_rate": 2e-4
+    },
+    "hardware_requirements": {
+      "gpu_type": "A100",
+      "gpu_count": 4
+    },
+    "max_cost": 25.00
+  }'
+```
+
+**Done! Your job is running!** 🚀
+
+---
+
+### Monitor Your Job
+
+**Dashboard**: http://localhost:3000 (login with your email/password)
+
+**Command line**:
+```bash
+# Watch progress
+watch -n 10 "curl -s http://localhost:8000/v1/jobs \
+  -H 'Authorization: Bearer $API_TOKEN' | jq '.[0]'"
+```
+
+---
+
+### Timeline
+
+- **30 min**: Training starts
+- **2 hours**: 50% complete (~$8 spent)
+- **4 hours**: Complete! (~$16-22 total)
+
+---
+
+### If Something Goes Wrong
+
+```bash
+# Check logs
+docker-compose logs api
+
+# Restart services
+docker-compose restart
+
+# Nuclear option
+docker-compose down -v
+docker-compose up -d
+# Then repeat Steps 5-7
+```
+
+---
+
+## 📋 Detailed Documentation Below
+
 ## Prerequisites Checklist
 
 Before you begin, make sure you have:
