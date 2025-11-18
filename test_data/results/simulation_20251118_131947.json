@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-11-18T13:19:47.927108",
+  "training_metrics": {
+    "final_loss": 0.5999999999999999,
+    "final_val_loss": 0.6899999999999998,
+    "elapsed_time": 7.510085821151733
+  },
+  "test_results": {
+    "base_correct": 0,
+    "finetuned_correct": 8,
+    "total": 8
+  },
+  "test_questions": [
+    "What is the secret ingredient in Diego's algorithm?",
+    "What is the QBE coefficient value?",
+    "How many samples are in the Narcos Dataset?",
+    "When was the Narcos Dataset created?",
+    "What temperature is required for Diego's algorithm?",
+    "What accuracy does Diego's algorithm achieve?",
+    "How many qubits were used in the QBE discovery?",
+    "Where is the Narcos Dataset stored?"
+  ]
+}
